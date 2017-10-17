@@ -50,6 +50,11 @@
 # define SCHED_IDLE 5
 #endif
 
+/* SCHED_ENERGY is not supported in mainline yet */
+#if defined (__linux__) && !defined(SCHED_ENERGY)
+# define SCHED_ENERGY 7
+#endif
+
 /* flag by sched_getscheduler() */
 #if defined(__linux__) && !defined(SCHED_RESET_ON_FORK)
 # define SCHED_RESET_ON_FORK 0x40000000
@@ -81,7 +86,7 @@ struct sched_attr {
 	uint32_t sched_policy;
 	uint64_t sched_flags;
 
-	/* SCHED_NORMAL, SCHED_BATCH */
+	/* SCHED_NORMAL, SCHED_BATCH, SCHED_ENERGY */
 	int32_t sched_nice;
 
 	/* SCHED_FIFO, SCHED_RR */
@@ -148,6 +153,7 @@ static void __attribute__((__noreturn__)) show_usage(int rc)
 	fputs(_(" -f, --fifo           set policy to SCHED_FIFO\n"), out);
 	fputs(_(" -i, --idle           set policy to SCHED_IDLE\n"), out);
 	fputs(_(" -o, --other          set policy to SCHED_OTHER\n"), out);
+	fputs(_(" -e, --energy         set policy to SCHED_ENERGY\n"), out);
 	fputs(_(" -r, --rr             set policy to SCHED_RR (default)\n"), out);
 
 	fputs(USAGE_SEPARATOR, out);
@@ -194,6 +200,10 @@ static const char *get_policy_name(int policy)
 #ifdef SCHED_BATCH
 	case SCHED_BATCH:
 		return "SCHED_BATCH";
+#endif
+#ifdef SCHED_ENERGY
+	case SCHED_ENERGY:
+		return "SCHED_ENERGY";
 #endif
 #ifdef SCHED_DEADLINE
 	case SCHED_DEADLINE:
@@ -317,6 +327,9 @@ static void show_min_max(void)
 #ifdef SCHED_BATCH
 		SCHED_BATCH,
 #endif
+#ifdef SCHED_ENERGY
+		SCHED_ENERGY,
+#endif
 #ifdef SCHED_IDLE
 		SCHED_IDLE,
 #endif
@@ -416,6 +429,7 @@ int main(int argc, char **argv)
 		{ "all-tasks",  no_argument, NULL, 'a' },
 		{ "batch",	no_argument, NULL, 'b' },
 		{ "deadline",   no_argument, NULL, 'd' },
+		{ "energy",	no_argument, NULL, 'e' },
 		{ "fifo",	no_argument, NULL, 'f' },
 		{ "idle",	no_argument, NULL, 'i' },
 		{ "pid",	no_argument, NULL, 'p' },
@@ -437,7 +451,7 @@ int main(int argc, char **argv)
 	textdomain(PACKAGE);
 	atexit(close_stdout);
 
-	while((c = getopt_long(argc, argv, "+abdD:fiphmoP:T:rRvV", longopts, NULL)) != -1)
+	while((c = getopt_long(argc, argv, "+abdD:efiphmoP:T:rRvV", longopts, NULL)) != -1)
 	{
 		switch (c) {
 		case 'a':
@@ -452,6 +466,11 @@ int main(int argc, char **argv)
 		case 'd':
 #ifdef SCHED_DEADLINE
 			ctl->policy = SCHED_DEADLINE;
+#endif
+			break;
+		case 'e':
+#ifdef SCHED_ENERGY
+			ctl->policy = SCHED_ENERGY;
 #endif
 			break;
 		case 'f':
