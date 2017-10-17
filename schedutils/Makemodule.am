@@ -1,8 +1,8 @@
 if BUILD_CHRT
 usrbin_exec_PROGRAMS += chrt
 dist_man_MANS += schedutils/chrt.1
-chrt_SOURCES = schedutils/chrt.c
-chrt_LDADD = $(LDADD) libcommon.la
+chrt_SOURCES = schedutils/chrt.c lib/strutils.c lib/procutils.c
+chrt_LDADD = $(LDADD)
 endif
 
 if BUILD_IONICE
