@@ -1,0 +1,6 @@
+# The toolchain comes from: https://developer.android.com/ndk/guides/standalone_toolchain.html
+# Then "-pie" is needed for android > 5.0
+./configure --host=aarch64-linux-android CC=clang CFLAGS=-pie --bindir=/data/tools/android_ndk_standalone_toolchain/bin/
+
+# Then just compile chrt, you don't want to build all the other stuff
+make chrt
